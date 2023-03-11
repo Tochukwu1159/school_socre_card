@@ -2,6 +2,7 @@ package com.decagon.scorecardapi.serviceImpl;
 
 import com.decagon.scorecardapi.dto.WeeklyScoreDto;
 import com.decagon.scorecardapi.dto.DecadevDto;
+import com.decagon.scorecardapi.enums.Gender;
 import com.decagon.scorecardapi.enums.Role;
 import com.decagon.scorecardapi.dto.responsedto.APIResponse;
 import com.decagon.scorecardapi.exception.*;
@@ -23,6 +24,7 @@ import com.decagon.scorecardapi.service.EmailService;
 import com.decagon.scorecardapi.utility.CalculateScores;
 import com.decagon.scorecardapi.utility.Generator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -49,13 +51,13 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public List<AdminResponse> getAllAdmin() {
         List<Admin> admins = adminRepository.findAll();
-        List<AdminResponse> adminResponses = new ArrayList<>();
-        if (admins.size() != 0) {
-            for (Admin admin : admins) {
-                adminResponses.add(new AdminResponse(admin));
+            List<AdminResponse> adminResponses = new ArrayList<>();
+            if(admins.size() != 0){
+                for(Admin admin : admins){
+                    adminResponses.add(new AdminResponse(admin));
+                }
             }
-        }
-        return adminResponses;
+            return  adminResponses;
     }
 
     @Override
@@ -66,26 +68,27 @@ public class AdminServiceImpl implements AdminService {
                 || (score.getAgileTest() < 0 || score.getAgileTest() >100.0)
                 || (score.getQaTest() < 0 || score.getQaTest() > 100.0 )){
             throw new CustomException("Decadev score shouldn't be less than zero(0) or greater than 100 ");
-        }
 
-        Decadev dev = decadevRepository.findById(id).orElseThrow(
-                () -> new UserNotFoundException("No Decadev with the ID: " + id));
-        if (scoreRepository.findWeeklyScoreByWeekAndDecadev(score.getWeek(), dev) != null) {
-            throw new CustomException("Weekly score already populated");
+        }
+        Decadev dev = decadevRepository.findById(id).orElseThrow(()-> new CustomException("No Decagon with the ID "+ id));
+        if(scoreRepository.findWeeklyScoreByWeekAndDecadev(score.getWeek(), dev) != null){
+            throw new UserNotFoundException("Weekly score already populated ");
         }
         WeeklyScore devWeeklyScore = new WeeklyScore();
         double result = CalculateScores.weeklyCumulative(score.getWeeklyTask(),
                 score.getAlgorithmScore(), score.getQaTest(), score.getAgileTest(), score.getWeeklyAssessment());
         devWeeklyScore.setAlgorithmScore(score.getAlgorithmScore());
         devWeeklyScore.setWeeklyAssessment(score.getWeeklyAssessment());
-        devWeeklyScore.setQaTest(score.getQaTest());
         devWeeklyScore.setAgileTest(score.getAgileTest());
-        devWeeklyScore.setWeeklyTask(score.getWeeklyTask());
+        devWeeklyScore.setQaTest(score.getQaTest());
         devWeeklyScore.setWeek(score.getWeek());
+        devWeeklyScore.setWeeklyTask(score.getWeeklyTask());
         devWeeklyScore.setDecadev(dev);
         devWeeklyScore.setCumulativeScore(result);
         return scoreRepository.save(devWeeklyScore);
-    }
+
+
+        }
 
 
 
@@ -152,8 +155,10 @@ public class AdminServiceImpl implements AdminService {
         userRepository.delete(decadev);
     }
 
+
     @Override
     public APIResponse<Decadev> updateDecadev(DecadevDto decadevDto, Long decadevId,  Long podId, Long stackId, Long squadId ) {
+
         Decadev decadev = (Decadev) userRepository.findById(decadevId).orElseThrow(() -> new CustomException("Decadev not found"));
         Pod pod = podRepository.findById(podId).orElseThrow(()-> new CustomException("Not found"));
         Stack stack = stackRepository.findById(stackId).orElseThrow(()-> new StackNotFoundException("Not found"));
@@ -169,10 +174,9 @@ public class AdminServiceImpl implements AdminService {
 
     }
     @Override
-    public WeeklyScore getDevWeeklyScore(String week, Long id){
-        Decadev dev = decadevRepository.findById(id).orElseThrow(
-                () -> new UserNotFoundException("No Decadev with the ID: " + id));
-        return scoreRepository.findWeeklyScoreByWeekAndDecadev(week, dev);
+    public WeeklyScore getDevWeeklyScore(String week, Long id) {
+        Decadev decadev = decadevRepository.findById(id).orElseThrow(() -> new CustomException("no deva"));
+        return scoreRepository.findWeeklyScoreByWeekAndDecadev(week, decadev);
     }
 
 

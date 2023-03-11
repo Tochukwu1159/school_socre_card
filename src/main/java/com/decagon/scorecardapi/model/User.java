@@ -35,3 +35,27 @@ public class User extends BaseClass implements Serializable {
         this.setIsAccountActive(true);
     }
 }
+
+
+
+//import { ConfigService } from "@nestjs/config";
+//        import { getConnectionManager, getRepository, MigrationInterface, QueryRunner } from "typeorm";
+//        import data from "../../../database/data.json"
+//
+//        export class CreateMovies1676232978490 implements MigrationInterface {
+//    name = 'CreateMovies1676232978490'
+//
+//    public async up(queryRunner: QueryRunner): Promise<void> {
+//        console.log("data")
+//        const configService = new ConfigService();
+//
+//        console.log(data)
+//        const manager = getConnectionManager().get(configService.get('POSTGRES_DB'));
+//        await manager.getRepository("movies").save(data);}
+//
+//    public async down(queryRunner: QueryRunner): Promise<void> {
+//        await queryRunner.query(`DROP TABLE "movies"`);
+//    }
+//
+//}
+
